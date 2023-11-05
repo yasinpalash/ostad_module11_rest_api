@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:moduel/screens/add_new_product_screen.dart';
+import 'package:moduel/screens/product_list_screen.dart';
 
 class ProductItem extends StatelessWidget {
-  const ProductItem({super.key});
+  const ProductItem({super.key, required this.product});
+
+  final Product product;
 
   @override
   Widget build(BuildContext context) {
@@ -15,56 +18,48 @@ class ProductItem extends StatelessWidget {
             });
       },
       leading: Image.network(
-        'https://media1.popsugar-assets.com/files/thumbor/ahSeFFd7VEgBV1fJcl_OSnJYYH8=/0x0:1500x1500/fit-in/1584x1584/filters:format_auto():upscale()/2023/07/13/896/n/1922507/dff1438e64b05eeae74dc7.67262441_.jpg',
+        product.image,
         width: 80,
       ),
-      title: Text('Product name '),
-      subtitle: const Column(
+      title: Text(product.productName),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text('Product name '),
-              SizedBox(width: 24,),
-              Text('Product name '),
-
-
-            ],
-          ),
-          Text('Product Description '),
+          Text(product.productCode),
+          Text('Total Price:${product.totalPrice}'),
         ],
       ),
-      trailing: Text('\$120'),
+      trailing: Text('\$${product.unitPrice}'),
     );
   }
 
   AlertDialog ProductActionDialog(BuildContext context) {
     return AlertDialog(
-              title: Text('Select Action  '),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    title: Text('Edit'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const AddNewProductScreen()),
-                      );
-                    },
-                    leading: Icon(Icons.edit),
-                  ),
-                  ListTile(
-                    title: Text('Delete'),
-                    onTap: (){
-                      Navigator.pop(context);
-                    },
-                    leading: Icon(Icons.delete_outlined),
-                  )
-                ],
-              ),
-            );
+      title: Text('Select Action  '),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text('Edit'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const AddNewProductScreen()),
+              );
+            },
+            leading: Icon(Icons.edit),
+          ),
+          ListTile(
+            title: Text('Delete'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+            leading: Icon(Icons.delete_outlined),
+          )
+        ],
+      ),
+    );
   }
 }

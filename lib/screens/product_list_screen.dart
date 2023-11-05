@@ -43,6 +43,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
         }
       }
     }
+    setState(() {
+
+    });
   }
 
   @override
@@ -62,9 +65,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Icon(Icons.add),
       ),
       body: ListView.separated(
-        itemCount: 10,
+        itemCount: productList.length,
         itemBuilder: (context, index) {
-          return const ProductItem();
+          return  ProductItem(product: productList[index],);
         },
         separatorBuilder: (_, __) => const Divider(),
       ),
