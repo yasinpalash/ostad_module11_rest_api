@@ -15,6 +15,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   List<Product> productList = [];
+  bool inProgress = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -23,29 +24,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   void getProductList() async {
+    productList.clear();
+    inProgress = true;
+    setState(() {});
     Response response = await get(
       Uri.parse('https://crud.teamrabbil.com/api/v1/ReadProduct'),
     );
-    print(response.statusCode);
-    print(response.body);
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseDate = jsonDecode(response.body);
       if (responseDate['status'] == 'success') {
         for (Map<String, dynamic> productJson in responseDate['data']) {
           productList.add(Product(
-              productJson['_id'],
-              productJson['ProductName'],
-              productJson['ProductCode'],
-              productJson['Img'],
-              productJson['UnitPrice'],
-              productJson['Qty'],
-              productJson['TotalPrice']));
+            productJson['_id'],
+            productJson['ProductName'] ?? '',
+            productJson['ProductCode'] ?? '',
+            productJson['Img'] ?? '',
+            productJson['UnitPrice'] ?? '',
+            productJson['Qty'] ?? '',
+            productJson['TotalPrice'] ?? '',
+          ));
         }
       }
     }
-    setState(() {
-
-    });
+    inProgress = false;
+    setState(() {});
   }
 
   @override
@@ -53,6 +55,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product List'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              getProductList();
+            },
+            icon: Icon(Icons.refresh_outlined),
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -64,13 +74,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
         },
         child: Icon(Icons.add),
       ),
-      body: ListView.separated(
-        itemCount: productList.length,
-        itemBuilder: (context, index) {
-          return  ProductItem(product: productList[index],);
-        },
-        separatorBuilder: (_, __) => const Divider(),
-      ),
+      body: inProgress
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.separated(
+              itemCount: productList.length,
+              itemBuilder: (context, index) {
+                return ProductItem(
+                  product: productList[index],
+                );
+              },
+              separatorBuilder: (_, __) => const Divider(),
+            ),
     );
   }
 }
