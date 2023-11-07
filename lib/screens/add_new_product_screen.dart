@@ -4,7 +4,6 @@ import 'package:http/http.dart';
 
 class AddNewProductScreen extends StatefulWidget {
   const AddNewProductScreen({super.key});
-
   @override
   State<AddNewProductScreen> createState() => _AddNewProductScreenState();
 }
@@ -13,29 +12,62 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
   final TextEditingController _titelTEController = TextEditingController();
   final TextEditingController _productCodeTEController =
       TextEditingController();
+  final TextEditingController _imageTEController = TextEditingController();
   final TextEditingController _quantityTEController = TextEditingController();
   final TextEditingController _priceTEController = TextEditingController();
   final TextEditingController _totalPriceTEController = TextEditingController();
   final TextEditingController _descriptionTEController =
       TextEditingController();
+  final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
+
+  bool addInProcess = false;
 
   Future<void> addNewProduct() async {
+    addInProcess = true;
+    setState(() {});
     final Map<String, String> inPutMap = {
-      "Img":
-          "https://www.startech.com.bd/image/cache/catalog/keyboard/a4-tech/bloody-s510r/bloody-s510r-500x500.webp",
-      "ProductCode": "Yas9999",
-      "ProductName": "kereeeeeee",
-      "Qty": "64",
-      "TotalPrice": "54554754",
-      "UnitPrice": "100000000"
+      "Img": _imageTEController.text.trim(),
+      "ProductCode": _productCodeTEController.text.trim(),
+      "ProductName": _titelTEController.text.trim(),
+      "Qty": _quantityTEController.text.trim(),
+      "TotalPrice": _totalPriceTEController.text.trim(),
+      "UnitPrice": _priceTEController.text.trim()
     };
+
     final Response response = await post(
         Uri.parse('https://crud.teamrabbil.com/api/v1/CreateProduct'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(inPutMap));
-    print(response.request?.url);
 
+    if(response.statusCode==200){
+      _titelTEController.clear();
+      _productCodeTEController.clear();
+      _imageTEController.clear();
+      _quantityTEController.clear();
+      _priceTEController.clear();
+      _totalPriceTEController.clear();
+      _descriptionTEController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+
+          const SnackBar(content: Text(' Product has been added'))
+      );
+
+
+
+
+
+    } else if(response.statusCode==400){
+
+      ScaffoldMessenger.of(context).showSnackBar(
+
+        const SnackBar(content: Text(' Product Code Should be unique'))
+      );
+    }
+    addInProcess = false;
+    setState(() {});
+    print(response.request?.url);
     print(response.statusCode);
+
   }
 
   @override
@@ -46,81 +78,111 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titelTEController,
-                decoration: const InputDecoration(
-                    label: Text('Titel'),
-                    hintText: 'Enter  Product Titel',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _productCodeTEController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    label: Text('Product Code'),
-                    hintText: 'Enter  Product code',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _quantityTEController,
-                decoration: const InputDecoration(
-                    label: Text('Quantity'),
-                    hintText: 'Enter  Quantity Titel',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _priceTEController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    label: Text('Price'),
-                    hintText: 'Enter  Product Price',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _totalPriceTEController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    label: Text('Total Price'),
-                    hintText: 'Enter  Total Product Price',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _descriptionTEController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                    label: Text('Description'),
-                    hintText: 'Enter  Product Description',
-                    focusedBorder: OutlineInputBorder(),
-                    border: OutlineInputBorder()),
-              ),
-              const SizedBox(
-                height: 24,
-              ),
-              SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                          textStyle: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      onPressed: () {
-                        addNewProduct();
-                      },
-                      child: Text('ADD')))
-            ],
+          padding: EdgeInsets.all(16),
+          child: Form(
+            key: _formkey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _titelTEController,
+                  decoration: const InputDecoration(
+                      label: Text('Titel'),
+                      hintText: 'Enter  Product Titel',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _productCodeTEController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      label: Text('Product Code'),
+                      hintText: 'Enter  Product code',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _imageTEController,
+                  decoration: const InputDecoration(
+                      label: Text('Image'),
+                      hintText: 'Enter  Product image',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _quantityTEController,
+                  decoration: const InputDecoration(
+                      label: Text('Quantity'),
+                      hintText: 'Enter  Quantity Titel',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _priceTEController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      label: Text('Price'),
+                      hintText: 'Enter  Product Price',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _totalPriceTEController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      label: Text('Total Price'),
+                      hintText: 'Enter  Total Product Price',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                TextFormField(
+                  controller: _descriptionTEController,
+                  maxLines: 5,
+                  decoration: const InputDecoration(
+                      label: Text('Description'),
+                      hintText: 'Enter  Product Description',
+                      focusedBorder: OutlineInputBorder(),
+                      border: OutlineInputBorder()),
+                  validator: isValidate,
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
+                SizedBox(
+                    width: double.infinity,
+                    child: addInProcess
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                textStyle: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            onPressed: () {
+                              if (_formkey.currentState!.validate()) {
+                                addNewProduct();
+                              }
+                            },
+                            child: Text('ADD')))
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String? isValidate(String? value) {
+    if (value?.trim().isNotEmpty ?? false) {
+      return null;
+    }
+    return 'Enter valid value';
   }
 
   @override
