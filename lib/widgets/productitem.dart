@@ -3,7 +3,9 @@ import 'package:moduel/screens/add_new_product_screen.dart';
 import 'package:moduel/screens/product_list_screen.dart';
 
 class ProductItem extends StatelessWidget {
-  const ProductItem({super.key, required this.product});
+  const ProductItem({super.key, required this.product, required this.onPressDelete});
+
+  final Function(String) onPressDelete;
 
   final Product product;
 
@@ -46,7 +48,9 @@ class ProductItem extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const AddNewProductScreen()),
+                    builder: (context) => AddNewProductScreen(
+                          product: product,
+                        )),
               );
             },
             leading: Icon(Icons.edit),
@@ -55,6 +59,7 @@ class ProductItem extends StatelessWidget {
             title: Text('Delete'),
             onTap: () {
               Navigator.pop(context);
+              onPressDelete(product.id);
             },
             leading: Icon(Icons.delete_outlined),
           )

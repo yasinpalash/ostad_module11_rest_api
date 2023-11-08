@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:moduel/screens/product_list_screen.dart';
 
 class AddNewProductScreen extends StatefulWidget {
-  const AddNewProductScreen({super.key});
+  final Product? product;
+  const AddNewProductScreen({super.key, this.product});
   @override
   State<AddNewProductScreen> createState() => _AddNewProductScreenState();
 }
@@ -39,7 +41,7 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(inPutMap));
 
-    if(response.statusCode==200){
+    if (response.statusCode == 200) {
       _titelTEController.clear();
       _productCodeTEController.clear();
       _imageTEController.clear();
@@ -48,26 +50,64 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
       _totalPriceTEController.clear();
       _descriptionTEController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-
-          const SnackBar(content: Text(' Product has been added'))
-      );
-
-
-
-
-
-    } else if(response.statusCode==400){
-
+          const SnackBar(content: Text(' Product has been added')));
+    } else if (response.statusCode == 400) {
       ScaffoldMessenger.of(context).showSnackBar(
-
-        const SnackBar(content: Text(' Product Code Should be unique'))
-      );
+          const SnackBar(content: Text(' Product Code Should be unique')));
     }
     addInProcess = false;
     setState(() {});
     print(response.request?.url);
     print(response.statusCode);
+  }
 
+  Future<void> upDateProduct() async {
+    addInProcess = true;
+    setState(() {});
+    final Map<String, String> inPutMap = {
+      "Img": _imageTEController.text.trim(),
+      "ProductCode": _productCodeTEController.text.trim(),
+      "ProductName": _titelTEController.text.trim(),
+      "Qty": _quantityTEController.text.trim(),
+      "TotalPrice": _totalPriceTEController.text.trim(),
+      "UnitPrice": _priceTEController.text.trim()
+    };
+
+    final Response response = await post(
+        Uri.parse(
+            'https://crud.teamrabbil.com/api/v1/UpdateProduct/${widget.product!.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(inPutMap));
+
+    if (response.statusCode == 200) {
+      _titelTEController.clear();
+      _productCodeTEController.clear();
+      _imageTEController.clear();
+      _quantityTEController.clear();
+      _priceTEController.clear();
+      _totalPriceTEController.clear();
+      _descriptionTEController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(' Product has been updated')));
+    } else if (response.statusCode == 400) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(' Product Code Should be unique')));
+    }
+    addInProcess = false;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    if (widget.product != null) {
+      _titelTEController.text = widget.product!.productName;
+      _productCodeTEController.text = widget.product!.productCode;
+      _imageTEController.text = widget.product!.image;
+      _priceTEController.text = widget.product!.quantity;
+      _quantityTEController.text = widget.product!.unitPrice;
+      _totalPriceTEController.text = widget.product!.totalPrice;
+    }
+    super.initState();
   }
 
   @override
@@ -140,16 +180,6 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                       border: OutlineInputBorder()),
                   validator: isValidate,
                 ),
-                TextFormField(
-                  controller: _descriptionTEController,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                      label: Text('Description'),
-                      hintText: 'Enter  Product Description',
-                      focusedBorder: OutlineInputBorder(),
-                      border: OutlineInputBorder()),
-                  validator: isValidate,
-                ),
                 const SizedBox(
                   height: 24,
                 ),
@@ -166,10 +196,16 @@ class _AddNewProductScreenState extends State<AddNewProductScreen> {
                                     fontSize: 18, fontWeight: FontWeight.bold)),
                             onPressed: () {
                               if (_formkey.currentState!.validate()) {
-                                addNewProduct();
+                                if (widget.product == null) {
+                                  addNewProduct();
+                                } else {
+                                  upDateProduct();
+                                }
                               }
                             },
-                            child: Text('ADD')))
+                            child: widget.product != null
+                                ? const Text('Update')
+                                : const Text('ADD')))
               ],
             ),
           ),

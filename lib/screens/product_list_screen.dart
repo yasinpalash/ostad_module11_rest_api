@@ -49,6 +49,22 @@ class _ProductListScreenState extends State<ProductListScreen> {
     inProgress = false;
     setState(() {});
   }
+  void deleteProduct(String productId) async {
+    inProgress = true;
+    setState(() {});
+    Response response = await get(
+      Uri.parse('https://crud.teamrabbil.com/api/v1/DeleteProduct/$productId'),
+    );
+    if (response.statusCode == 200) {
+      getProductList();
+
+    }
+    else {
+      inProgress = false;
+      setState(() {});
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +76,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             onPressed: () {
               getProductList();
             },
-            icon: Icon(Icons.refresh_outlined),
+            icon: const Icon(Icons.refresh_outlined),
           )
         ],
       ),
@@ -72,7 +88,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 builder: (context) => const AddNewProductScreen()),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: inProgress
           ? const Center(child: CircularProgressIndicator())
@@ -80,7 +96,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               itemCount: productList.length,
               itemBuilder: (context, index) {
                 return ProductItem(
-                  product: productList[index],
+                  product: productList[index], onPressDelete: (String productId) {
+                    deleteProduct(productId);
+
+                },
                 );
               },
               separatorBuilder: (_, __) => const Divider(),
